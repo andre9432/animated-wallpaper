@@ -1,0 +1,1 @@
+g++ main.cpp glad.c shaders.cpp -L./lib -luser32 -lgdi32 -lopengl32 -I./include
