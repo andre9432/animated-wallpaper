@@ -46,9 +46,41 @@ HWND get_wallpaper_window()
     return wallpaper_hwnd;
 }
 
-int createDummyOpenGLContext(HWND windowHandler)
+int createDummyOpenGLContext()
 {
-    HDC    hdcDUMMY = GetDC(windowHandler);
+    // Register the dummy window class
+    tagWNDCLASSA dummywndClass = {
+        .style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC,
+        .lpfnWndProc = DefWindowProcA,
+        .hInstance = GetModuleHandle(0),
+        .lpszClassName = "Dummy_Window_Class",
+    };
+
+    if (!RegisterClassA(&dummywndClass)) {
+        std::cerr << "Failed to register dummy OpenGL window: " << GetLastError() << std::endl;
+        return FALSE;
+    }
+
+    HWND dummyWindow = CreateWindowExA(
+        0,                              // Optional window styles
+        dummywndClass.lpszClassName,    // Window class
+        "I am a dummy window!",        // Window text
+        0,                              // Window style
+
+        // Size and position
+        CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+
+        NULL,                       // Parent window
+        NULL,                       // Menu
+        dummywndClass.hInstance,    // Instance handle
+        0                           // Additional application data
+    );
+    if (dummyWindow == NULL) {
+        std::cerr << "Failed to create dummy window handle" << GetLastError() << std::endl;
+        return FALSE;
+    }
+
+    HDC    hdcDUMMY = GetDC(dummyWindow);
     HGLRC  hglrcDUMMY; 
 
     PIXELFORMATDESCRIPTOR pfdDUMMY = { 
@@ -114,7 +146,8 @@ int createDummyOpenGLContext(HWND windowHandler)
     
     // delete the rendering context  
     wglDeleteContext(hglrcDUMMY);
-    ReleaseDC(windowHandler, hdcDUMMY);
+    ReleaseDC(dummyWindow, hdcDUMMY);
+    DestroyWindow(dummyWindow);
 
     return TRUE;
 }
@@ -138,7 +171,7 @@ int main(int argc, const char** argv)
     HWND wallpaperWHandler = get_wallpaper_window();
 
     // create a fake/dummy context for getting necessary extensions
-    if (!createDummyOpenGLContext(wallpaperWHandler))
+    if (!createDummyOpenGLContext())
     {
         std::cerr << "Failed to create dummy context for loading needed functions for modern OpenGL" << std::endl;
         return -1;
@@ -181,7 +214,7 @@ int main(int argc, const char** argv)
     if (!SetPixelFormat(hdc, pixel_format, &pfd))
     {
         std::cerr << "Function SetPixelFormat() in main failed: " << GetLastError() << std::endl;
-        //return -1;
+        return -1;
     }
 
     const int attribContextList[] = {
