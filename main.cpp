@@ -180,6 +180,7 @@ int main(int argc, const char** argv)
 
     // After initializing the extension pointers for loading modern OpenGL functions, we can create a real GLcontent
     // -------------------------------------------------------------------------------------------------------------
+
     HDC    hdc = GetDC(wallpaperWHandler);
     HGLRC  hglrc;
  
@@ -260,7 +261,7 @@ int main(int argc, const char** argv)
          1.f, -1.f,
          1.f,  1.f
     };
-    std::cout << "Hello! Inside OpenGL!\n";
+
     GLuint VAO, VBO;
     glCreateVertexArrays(1, &VAO);
     glCreateBuffers(1, &VBO);
@@ -289,7 +290,6 @@ int main(int argc, const char** argv)
         double elapsedTime = std::chrono::duration_cast<std::chrono::microseconds>(current_time - start_time).count() * 0.000001;
         deltaTime = elapsedTime - lastTime;
         lastTime = elapsedTime;
-        //std::cout << elapsedTime << '\n';
 
         // Input
         glm::vec2 normalizedMousePos;
