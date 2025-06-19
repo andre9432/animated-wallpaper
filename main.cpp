@@ -20,28 +20,69 @@ BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam)
     HWND p = FindWindowExW(hwnd, NULL, L"SHELLDLL_DefView", NULL);
     HWND* ret = (HWND*)lParam;
 
-    if (p)
-        {
+    if (p){
         // Gets the WorkerW Window after the current one.
-        *ret = FindWindowExW(NULL, hwnd, L"WorkerW", NULL);
-        }
+        *ret = FindWindowExW(hwnd, p, L"WorkerW", NULL);
+    }
     return true;
 }
 
+std::string WideToString(const wchar_t* wstr) {
+    int len = WideCharToMultiByte(CP_UTF8, 0, wstr, -1, nullptr, 0, nullptr, nullptr);
+    std::string str(len, 0);
+    WideCharToMultiByte(CP_UTF8, 0, wstr, -1, &str[0], len, nullptr, nullptr);
+    str.pop_back(); // remove null terminator
+    return str;
+}
+
+void PrintWindowInfo(HWND hwnd) {
+    if (!IsWindow(hwnd)) {
+        std::cout << "Invalid HWND." << std::endl;
+        return;
+    }
+
+    // Get window title
+    wchar_t title[256];
+    GetWindowTextW(hwnd, title, sizeof(title)/sizeof(wchar_t));
+
+    // Get class name
+    wchar_t className[256];
+    GetClassNameW(hwnd, className, sizeof(className)/sizeof(wchar_t));
+
+    // Get process ID
+    DWORD pid;
+    GetWindowThreadProcessId(hwnd, &pid);
+
+    std::cout << "HWND: " << hwnd << std::endl;
+    std::cout << "Window Title: " << WideToString(title) << std::endl;
+    std::cout << "Class Name: " << WideToString(className) << std::endl;
+    std::cout << "Process ID: " << pid << std::endl;
+}
 
 HWND get_wallpaper_window()
 {
     // Fetch the Progman window
-    HWND progman = FindWindowW(L"ProgMan", NULL);
+    HWND progman = FindWindowW(L"Progman", NULL);
+    if (progman == NULL)
+        std::cerr << "No progman window was found!\n";
     // Send 0x052C to Progman. This message directs Progman to spawn a 
     // WorkerW behind the desktop icons. If it is already there, nothing 
     // happens.
-    SendMessageTimeout(progman, 0x052C, 0, 0, SMTO_NORMAL, 1000, nullptr);
+    if (!SendMessageTimeout(progman, 0x052C, 0, 0, SMTO_NORMAL, 1000, nullptr))
+        std::cerr << "Could not send message to progman!\n";
     // We enumerate all Windows, until we find one, that has the SHELLDLL_DefView 
     // as a child. 
     // If we found that window, we take its next sibling and assign it to workerw.
     HWND wallpaper_hwnd = nullptr;
     EnumWindows(EnumWindowsProc, (LPARAM)&wallpaper_hwnd);
+
+    if (wallpaper_hwnd == nullptr)
+    wallpaper_hwnd = FindWindowExW(progman, NULL, L"WorkerW", NULL);
+    
+    PrintWindowInfo(wallpaper_hwnd);
+
+    if (wallpaper_hwnd == nullptr)
+        std::cout << "No wallpaper handle was found!\n";
     // Return the handle you're looking for.
     return wallpaper_hwnd;
 }
@@ -181,7 +222,10 @@ int main(int argc, const char** argv)
     // After initializing the extension pointers for loading modern OpenGL functions, we can create a real GLcontent
     // -------------------------------------------------------------------------------------------------------------
 
-    HDC    hdc = GetDC(wallpaperWHandler);
+    HDC hdc = GetDC(wallpaperWHandler);  
+    if (hdc == NULL)
+        std::cerr << "Could not retrieve DC\n";
+        
     HGLRC  hglrc;
  
     // get the best available match of pixel format for the device context   
