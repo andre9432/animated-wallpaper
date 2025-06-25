@@ -9,9 +9,11 @@ Feel free to use this project in any way you want.
 ## How to compile this project
 
 [MSYS2](https://www.msys2.org/) has been used to compile this project. You will need:
-- mingw64: `pacman -S mingw-w64-x86_64-toolchain`
+- gcc: `pacman -S mingw-w64-ucrt-x86_64-gcc`
 - [make](https://packages.msys2.org/packages/make): `pacman -S make`
-- [glm](https://packages.msys2.org/packages/mingw-w64-x86_64-glm): `pacman -S mingw-w64-x86_64-glm`
+- git: `pacman -S git`
+
+**If you are compiling outside the msys2 environment, be sure to add `msys64\ucrt64\bin` and `msys\usr\bin` to your environment variables' path**
 
 1. Run `git clone https://github.com/andre9432/animated-wallpaper.git`
 2. Run `make` in the root directory.
