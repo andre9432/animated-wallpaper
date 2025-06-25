@@ -22,7 +22,7 @@ BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam)
 
     if (p){
         // Gets the WorkerW Window after the current one.
-        *ret = FindWindowExW(hwnd, p, L"WorkerW", NULL);
+        *ret = FindWindowExW(NULL, hwnd, L"WorkerW", NULL);
     }
     return true;
 }
@@ -77,7 +77,7 @@ HWND get_wallpaper_window()
     EnumWindows(EnumWindowsProc, (LPARAM)&wallpaper_hwnd);
 
     if (wallpaper_hwnd == nullptr)
-    wallpaper_hwnd = FindWindowExW(progman, NULL, L"WorkerW", NULL);
+        wallpaper_hwnd = FindWindowExW(progman, NULL, L"WorkerW", NULL);
     
     PrintWindowInfo(wallpaper_hwnd);
 
