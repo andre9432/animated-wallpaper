@@ -22,7 +22,7 @@ Feel free to use this project in any way you want.
 
 1. Run `git clone https://github.com/andre9432/animated-wallpaper.git`
 2. Run `make` in the root directory.
-3. Run the executable *run.exe*.
+3. Run the executable *animated-wallpaper.exe*.
 
 ## Known issues
 Does not work on Windows 11 (only 10) yet. Working on it..
